@@ -1,36 +1,51 @@
+'use client'
 import React, { useEffect, useState } from 'react'
 
 const ConnectButton = () => {
     const [port, setPort] = useState(null)
+    const [writer, setWriter] = useState(null)
     const connectPort = async () => {
-        const port = await navigator.serial.requestPort()
-        // 시리얼 포트가 오픈되길 기다린다.
-        // await port.open({ baudRate: 9600 })
-        setPort(port)
-        port.onconnect = () => {
-            // Add |e.target| to the UI or automatically connect.
-            console.log('connect!')
-        }
-        console.log(port)
-    }
-    useEffect(() => {
-        navigator.serial.addEventListener('connect', (e) => {
-            // Add |e.target| to the UI or automatically connect.
-            console.log('connect!')
+        const filter = [{
+            usbProductId: 8963,
+            usbVendorId: 1659
+        }]
+        // const port = await navigator.serial.requestPort({filter})
+        const ports = await navigator.serial.getPorts();
+        
+        const port = ports.find(port => {
+            return port.getInfo().usbProductId == 8963 && port.getInfo().usbVendorId == 1659
         })
-    }, [])
-    navigator.serial.readable.getReader()
-    const openPort = async () => {
-        const reader = port.readable.getReader()
-        const { value, done } = await reader.read()
-        console.log(value)
-        console.log(done)
-        // await port.open({ baudRate: 9600 })
+        // 시리얼 포트가 오픈되길 기다린다.
+        await port.open({ baudRate: 9600 })
+        setPort(port)
+        const writer = await port.writable.getWriter();
+        setWriter(writer)
+        // console.log(port.writable.getWriter());
+        
+
+    }
+    // navigator.serial.readable.getReader()
+    const openDoor = async () => {
+        
+        //const writer = port.writable.getWriter();
+        const data = new Uint8Array([0x33, 0x01, 0x12, 0x00, 0x00, 0x00, 0x01, 0x47]); // hello
+        await writer.write(data);
+
+        // // Allow the serial port to be closed later.
+        // writer.releaseLock();
+    }
+    const closeDoor = async () => {
+        const data = new Uint8Array([0x33, 0x01, 0x11, 0x00, 0x00, 0x00, 0x01, 0x46]);
+        await writer.write(data)
     }
     return (
         <>
             <button onClick={connectPort}> connect</button>
-            <button onClick={openPort}> connect</button>
+            <div>
+                <button onClick={openDoor}> open</button>
+                <button onClick={closeDoor}> close</button>
+            </div>
+            
         </>
     )
 }
