@@ -28,13 +28,15 @@ const ConnectButton = () => {
     const openDoor = async () => {
         
         //const writer = port.writable.getWriter();
-        const data = new Uint8Array([0x33, 0x01, 0x12, 0x00, 0x00, 0x00, 0x01, 0x47]); // hello
+        // SEND HEX DATA CODE TO RELAY NUMBER 01 (RELAY ON)
+        const data = new Uint8Array([0x33, 0x01, 0x12, 0x00, 0x00, 0x00, 0x01, 0x47]); // 
         await writer.write(data);
 
         // // Allow the serial port to be closed later.
         // writer.releaseLock();
     }
     const closeDoor = async () => {
+        // SEND HEX DATA CODE TO RELAY NUMBER 01 (RELAY OFF)
         const data = new Uint8Array([0x33, 0x01, 0x11, 0x00, 0x00, 0x00, 0x01, 0x46]);
         await writer.write(data)
     }
